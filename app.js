@@ -1,10 +1,11 @@
+require('./config/database');
 const express = require('express');
-const mongoose = require('mongoose');
 const routes = require('./router/userRoutes');
-const chalk = require('chalk');
 
 require('dotenv').config();
-//process.env.
+//process.env.Instance_name
+
+const port = process.env.PORT || 4000;
 
 const app = express();
 
@@ -15,14 +16,8 @@ const app = express();
 // app.use(express.static(publicPath));
 app.use(express.json());
 
-const dbname = process.env.DB_NAME;
-const host = process.env.HOST;
-const port = process.env.PORT || 4000;
 
-//mongoDB connection
-mongoose.connect(`mongodb://${host}/${dbname}`).
-    then(() => console.log('Database is ',chalk.black.bgGreen('Connected.'))).
-    catch(chalk.red(err => console.log('Error',err))); //connection error handle.
+
 
 //app.use(express.json()); // this middleware is recognize the upcamming requests obj as Json eccept html post
 

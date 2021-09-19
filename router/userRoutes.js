@@ -39,7 +39,7 @@ router.post('/create', (req, res) => {
 });
  
 // View all users API
-router.get('/view', (req, res) => {
+router.get('/users', (req, res) => {
   User.find()
   .then((result) =>  {
        res.send(result)
