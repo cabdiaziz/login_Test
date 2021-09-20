@@ -9,7 +9,7 @@ const router = express.Router();
 
 //Create user API
 router.post('/create', (req, res) => {   
-
+  //added joi schema to validate.
   const schema = Joi.object({     
       admin_name: Joi.string().min(3).max(30).required(),
       admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
@@ -54,7 +54,7 @@ router.post('/create', (req, res) => {
 
 // View all users API
 router.get('/admins', (req, res) => {
-   Admin.find().select('admin_name admin_email -_id admin_type status')
+   Admin.find().select('admin_name admin_email -_id admin_type status createdAt updatedAt')
   .then((result) =>  {
        res.send(result)})
   .catch((err) =>{                                                                                                                                                                                                            
