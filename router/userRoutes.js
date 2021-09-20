@@ -1,36 +1,49 @@
 const express = require('express');
-const User = require('../models/user');
+const Admin = require('../models/admins');
+const Joi = require('joi');
 const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
+const chalk = require('chalk');
 
 
 const router = express.Router();
 
 //Create user API
 router.post('/create', (req, res) => {   
-   const email = req.body.email;
-   //simple validation
-   if (!req.body.username || !email || !req.body.password) {
-       res.status(400).json({msg : 'please fill all data'})
+
+  const schema = Joi.object({     
+      admin_name: Joi.string().min(3).max(30).required(),
+      admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
+      admin_type: Joi.string().min(1),
+      admin_password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+      status : Joi.string().min(1)   
+   });
+
+   const joiError = schema.validate(req.body);
+   if(joiError.error){
+     return res.send(joiError.error.details[0].message);
    }
-        //hashing password
-   bcrypt.hash(req.body.password,10,(err,hash) =>{
+
+   const {email} = req.body.admin_email;
+   //hashing password
+   bcrypt.hash(req.body.admin_password,10,(err,hash) =>{
      if (err)
         return res.status(500).json({error: err});
       else{
-        User.findOne({email})
-        .then(user => {
-          if(user)
+        Admin.findOne({email})
+        .then(admin => {
+          if(admin)
            return res.status(400).json('This user is already exists');
            else{
-            const newUser = new User({
-              username: req.body.username,
-              email: email,
-              password: hash,
-              roleAdmin : req.body.roleAdmin,
+            const newAdmin = new Admin({
+              admin_name: req.body.admin_name,
+              admin_email: req.body.admin_email,
+              admin_type: req.body.admin_type,
+              admin_password: hash,
+              status : req.body.status,
             })
-            newUser.save()
-            .then(() => res.status(201).json({msg: 'User is Created'}))
-            .catch((err) => console.log(err))   // error checking...
+            newAdmin.save()
+            .then(() => res.status(201).json({msg: 'Admin is Created'}))
+            .catch((err) => console.log(chalk.red('ERROR',err)))   // error checking...
            }
         })
         .catch((err) => console.log(err))
@@ -38,27 +51,28 @@ router.post('/create', (req, res) => {
    })
 });
  
+
 // View all users API
-router.get('/users', (req, res) => {
-  User.find()
+router.get('/admins', (req, res) => {
+   Admin.find().select('admin_name admin_email -_id admin_type status')
   .then((result) =>  {
-       res.send(result)
-      })
-  .catch((err) =>{
+       res.send(result)})
+  .catch((err) =>{                                                                                                                                                                                                            
        res.status(400).send(err)
        console.log(err)
       })
 });
 
 //login user Api
-router.post('/login', async (req, res) =>{
-  try{
+router.post('/login',async (req, res) =>{
     //findbycredentials is a userdefied function in side the user model.
-      const user = await User.findByCredentials(req.body.email, req.body.password)
-      res.send(user);
-    } catch(e) {
+    try{
+      const user = await User.findByCredentials(req.body.admin_email, req.body.admin_password)
+      res.send(user)
+    }catch(e){
       res.status(400).send()
     }
+ 
 });
 
 
