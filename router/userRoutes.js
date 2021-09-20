@@ -9,18 +9,10 @@ const router = express.Router();
 
 //Create user API
 router.post('/create', (req, res) => {   
-  //added joi schema to validate.
-  const schema = Joi.object({     
-      admin_name: Joi.string().min(3).max(30).required(),
-      admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
-      admin_type: Joi.string().min(1),
-      admin_password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
-      status : Joi.string().min(1)   
-   });
-
-   const joiError = schema.validate(req.body);
-   if(joiError.error){
-     return res.send(joiError.error.details[0].message);
+  
+ const {error} = users_validation(req.body);   
+   if(error){
+     return res.send(error.details[0].message);
    }
 
    const {email} = req.body.admin_email;
@@ -34,7 +26,7 @@ router.post('/create', (req, res) => {
           if(admin)
            return res.status(400).json('This user is already exists');
            else{
-            const newAdmin = new Admin({
+            const newAdmin = new  Admin({
               admin_name: req.body.admin_name,
               admin_email: req.body.admin_email,
               admin_type: req.body.admin_type,
@@ -50,6 +42,19 @@ router.post('/create', (req, res) => {
       }
    })
 });
+
+// @JOI package validation function.
+//added joi schema to validate before added into the db.
+function users_validation(admin){
+  const schema = Joi.object({     
+      admin_name: Joi.string().min(3).max(30).required(),
+      admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
+      admin_type: Joi.string().min(1),
+      admin_password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+      status : Joi.string().min(1)   
+   });
+   return schema.validate(user);
+}
  
 
 // View all users API
