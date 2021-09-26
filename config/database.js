@@ -4,7 +4,6 @@ const chalk = require('chalk');
 require('dotenv').config();
 //process.env.Instance_name
 
-
 const dbname = process.env.DB_NAME;
 const host = process.env.HOST;
 
@@ -14,4 +13,4 @@ mongoose.connect(`mongodb://${host}/${dbname}`).
     catch(chalk.red(err => console.log('Error',err))); //connection error handle.
 
 
-require('../router/userRoutes');
+require('../routes/userRoutes');

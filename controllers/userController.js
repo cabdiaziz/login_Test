@@ -4,7 +4,8 @@ const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
 const chalk = require('chalk');
 
 const registrer_admin = (req, res) => {
-    
+    res.render('add-admin')
+
   const {error} = adminCreate_validation(req.body);   
   if(error) return res.status(404).send(error.details[0].message);
 
