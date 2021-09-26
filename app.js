@@ -16,14 +16,10 @@ const app = express();
 // app.use(express.static(publicPath));
 app.use(express.json());
 
-
-
-
 //app.use(express.json()); // this middleware is recognize the upcamming requests obj as Json eccept html post
 
-
 // home page
-app.get('/',   (req, res) => {
+app.get('/', (req, res) => {
  res.status(200).send('Welcome to Home')
 });
 
