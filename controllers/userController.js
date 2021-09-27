@@ -1,37 +1,42 @@
-const Admin = require('../models/admins');
+const {Admin, admin_validation} = require('../models/admins');
 const Joi = require('joi');
 const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
 const chalk = require('chalk');
 const _ = require('lodash')
-const jwt = require('jsonwebtoken')
 
 const registrer_admin = async(req, res) => {
-  res.render('register')
-
-  let email = req.body.admin_email;
+  res.render('register',{
+    title: 'create a new admins'
+  })
 
   const {error} = admin_validation(req.body);   
-  if(error)  return res.send(joiError.error.details[0].message);
-
+  if(error)  {
+    return res.status(404).send(joiError.error.details[0].message)
+  }
   //hashing password
     bcrypt.hash(req.body.admin_password,10,(err,hash) =>{
     if (err)
        return res.status(500).json({error: err});
      else{
-      let admin = Admin.findOne({admin_email: email}) 
-         if(admin)
-          return res.status(400);
+         Admin.findOne({admin_email: req.body.admin_email})
+         .then(admin => {
+          if(admin)
+             return res.status(400);
           else{
               //added a lodash package to pick wanted items only.
            const newAdmin = new  Admin(_.pick(req.body,['admin_name', 'admin_email','admin_password']))
            newAdmin.admin_password = hash;
            newAdmin.save()
-           const token = admin.generatetokens()
-
-           .then(() => res.header('auth-token', token).redirect('/login'))
+           .then(() =>{
+            const token = admin.generatetokens()
+            res.header('auth-token', token).redirect('/login')
+          })
            .catch((err) => console.log(chalk.red('ERROR',err)))   // error checking...
-          }          
+          }  
+        })
+        .catch((err) => console.log(chalk.red('ERROR',err)))        
      }
+     
   })
 };
 

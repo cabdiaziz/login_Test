@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
+const Joi = require('joi');
+
 
 const adminSchema = new mongoose.Schema({
   admin_name:{
@@ -24,8 +26,8 @@ const adminSchema = new mongoose.Schema({
 },{timestamps: true})
 
 adminSchema.methods.generatetokens = function () {
-    const token = jwt.sign({_id: this._id}, 'private key')
-    return token
+    const token = jwt.sign({_id:this._id}, 'private key')
+    return token;
 }
 
 function admin_validation(admin){
@@ -41,4 +43,5 @@ function admin_validation(admin){
 
 const Admin = mongoose.model('admins', adminSchema)
 
-module.exports = Admin
+exports.Admin = Admin
+exports.admin_validation = admin_validation

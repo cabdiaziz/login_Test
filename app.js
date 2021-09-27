@@ -30,8 +30,8 @@ app.get('/dashboard', (req, res) => {
     })
 })
 
-//my API'S from router foler
-app.use(routes);
+//my API'S from router folder
+app.use('/admins', routes);
 
 app.get('/about', (req, res) => {
     res.render('about',{
