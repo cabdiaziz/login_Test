@@ -8,30 +8,41 @@ require('dotenv').config();
 const port = process.env.PORT || 4000;
 
 const app = express();
-app.use(express.json()); // this middleware is recognize the upcamming requests obj as Json eccept html post
+
+
+app.set('view engine','ejs')
+app.set('views', path.join(__dirname,'/views/'))
+const publicDirectory = path.join(__dirname,'./public/')
+app.use(express.static(publicDirectory))
 
 app.use(express.urlencoded({ extended: true }));
-
-const publicPath = path.join(__dirname,'./public');
-
-app.set('view engine', 'ejs');
-app.use(express.static(publicPath));
+app.use(express.json())
 
 // home page
 app.get('/', (req, res) => {
- res.render('index')
+ res.render('login')
 });
+
+app.get('/dashboard', (req, res) => {
+    res.render('dashboard',{
+        msg: 'Welcome to the dashboard page ',
+        user: req.body.admin_name
+    })
+})
 
 //my API'S from router foler
 app.use(routes);
 
 app.get('/about', (req, res) => {
-    res.status(200).send('This Api\'s developed by Abdiaziiz abdullahi Aden.' )
+    res.render('about',{
+        title: 'about',
+        name: 'Abdiaziiz abdullahi Aden.'
+    })
 });
 
 //404 page.
-app.use((req, res) => {
-    return res.status(400).json({msg: 'This pase is no longer loaded.'});    
+app.use('*',(req, res) => {
+    return res.status(404).render('404',{title: '404'});   
 });
 
 app.listen(port,()=>{

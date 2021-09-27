@@ -2,46 +2,41 @@ const Admin = require('../models/admins');
 const Joi = require('joi');
 const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
 const chalk = require('chalk');
+const _ = require('lodash')
+const jwt = require('jsonwebtoken')
 
-const registrer_admin = (req, res) => {
-    res.render('add-admin')
+const registrer_admin = async(req, res) => {
+  res.render('register')
 
-  const {error} = adminCreate_validation(req.body);   
-  if(error) return res.status(404).send(error.details[0].message);
+  let email = req.body.admin_email;
 
-  const admin_email = req.body.admin_email;
- 
+  const {error} = admin_validation(req.body);   
+  if(error)  return res.send(joiError.error.details[0].message);
+
   //hashing password
-  bcrypt.hash(req.body.admin_password,10,(err,hash) =>{
+    bcrypt.hash(req.body.admin_password,10,(err,hash) =>{
     if (err)
        return res.status(500).json({error: err});
      else{
-       Admin.findOne({admin_email})
-       .then(admin => {
+      let admin = Admin.findOne({admin_email: email}) 
          if(admin)
-          return res.status(400).json('This user is already exists');
+          return res.status(400);
           else{
-              //need to add pick, lodash package
-           const newAdmin = new  Admin({
-             admin_id : req.body.admin_id,
-             admin_name: req.body.admin_name,
-             admin_email: req.body.admin_email,
-             admin_type: req.body.admin_type,
-             admin_password: hash,
-             status : req.body.status,
-           })
+              //added a lodash package to pick wanted items only.
+           const newAdmin = new  Admin(_.pick(req.body,['admin_name', 'admin_email','admin_password']))
+           newAdmin.admin_password = hash;
            newAdmin.save()
-           .then(() => res.status(201).json({msg: 'Admin is Created'}))
+           const token = admin.generatetokens()
+
+           .then(() => res.header('auth-token', token).redirect('/login'))
            .catch((err) => console.log(chalk.red('ERROR',err)))   // error checking...
-          }
-       })
-       .catch((err) => console.log(err))
+          }          
      }
   })
 };
 
 //on process.
-const updateById_admin = (req, res) => {
+const updateById_admin =  (req, res) => {
   const findAdmin =  Admin.findById(req.params.Admin._id)
   if(!findAdmin) return res.send('This Admin is not Found !')
   
@@ -57,48 +52,53 @@ const updateById_admin = (req, res) => {
 };
 
 //add pick ,  lodash package.
-const viewAll_admins = (req, res) => {
-    Admin.find().select('_id admin_name admin_email admin_type status')
-    .then((result) => res.send(result))
+const viewAll_admins =  (req, res) => {
+    Admin.find().select('admin_name admin_email admin_type ,status')
+    .then(result => res.send(result))
     .catch((err) => res.status(400).send(err))
 };
 
 //on process
-const loginBy_admin = (req, res) => {
+const loginBy_admin = async (req, res) => {
 
+    let email = req.body.admin_email;
     const {error} = adminLogin_validation(req.body);   
-    if(error) return res.status(404).send(error.details[0].message);
+    console.log( req.body.admin_email)
+    if(error) return res.status(400).send(error.details[0].message.toString());
    
-       let admin = Admin.findOne({admin_email: req.body.admin_email})
+       let admin = await Admin.findOne({admin_email:email})
          if(admin) {
                        //found admin
                        //check admin type. == 'ractor'
                        //if admin is rector is can acces all department and all fuclty.
-           const checkPassword = bcrypt.compare(req.body.admin_password, admin.admin_password)
+           const checkPassword = await bcrypt.compare(req.body.admin_password, admin.admin_password)
            if(!checkPassword) {
               return res.status(400).send('invalid email or password')
            }
-           res.send('Login success.')
-    }
-    else{           
+           
+           const token = admin.generatetokens()
+           res.send(token)
+           res.redirect('/dashboard')
+         }
+         else{           
        return res.status(400).send('invalid email or password')
-     }        
+      }        
 };
 
 
 // @JOI package validation function.
 //added joi schema to validate before added into the db.
 
-function adminCreate_validation(admin){
-    const schema = Joi.object({     
-        admin_name: Joi.string().min(3).max(30).required(),
-        admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
-        admin_type: Joi.string().min(1),
-        admin_password: Joi.string().min(8).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
-        status : Joi.string().min(1)   
-     });
-     return schema.validate(admin);
-};
+// function adminCreate_validation(admin){
+//     const schema = Joi.object({     
+//         admin_name: Joi.string().min(3).max(30).required(),
+//         admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
+//         admin_type: Joi.string().min(1),
+//         admin_password: Joi.string().min(8).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+//         status : Joi.string().min(1)   
+//      });
+//      return schema.validate(admin);
+// };
   
 function adminUpdate_validation(admin){
     const schema = Joi.object({     
@@ -112,8 +112,8 @@ function adminUpdate_validation(admin){
 
 function adminLogin_validation(admin){
     const schema = Joi.object({     
-        admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
-        admin_password: Joi.string().min(8).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+        admin_email: Joi.string().min(4).email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }).required(),
+        admin_password: Joi.string().min(8).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required()
      });
      return schema.validate(admin);
 };

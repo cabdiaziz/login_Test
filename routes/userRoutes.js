@@ -1,10 +1,10 @@
 const express = require('express');
 const adminController = require('../controllers/userController');
-
 const router = express.Router();
 
+
 //Register a new user.
-router.post('/add-admin', adminController.registrer_admin );
+router.post('/admin-register', adminController.registrer_admin);
  
 //@PUT update the user
 router.put('/update-admin/:id', adminController.updateById_admin)
@@ -13,7 +13,7 @@ router.put('/update-admin/:id', adminController.updateById_admin)
 router.get('/viewAll-admins', adminController.viewAll_admins)
 
 //login user Api
-router.post('/login-admin', adminController.loginBy_admin)
+router.post('/login', adminController.loginBy_admin)
 
 
 module.exports = router;
