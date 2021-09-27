@@ -2,12 +2,14 @@ require('./config/database');
 const express = require('express');
 const routes = require('./routes/userRoutes');
 const path = require('path')
+const morgan = require('morgan')
 
 require('dotenv').config();
 //process.env.Instance_name
 const port = process.env.PORT || 4000;
 
 const app = express();
+app.use(morgan('tiny'))
 
 
 app.set('view engine','ejs')

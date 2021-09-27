@@ -4,8 +4,9 @@ const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
 const chalk = require('chalk');
 const _ = require('lodash')
 
-const registrer_admin = async(req, res) => {
-  res.render('register',{
+const registrer_admin = async(req, res, next) => {
+ 
+  res.render('create',{
     title: 'create a new admins'
   })
 
@@ -27,9 +28,10 @@ const registrer_admin = async(req, res) => {
            const newAdmin = new  Admin(_.pick(req.body,['admin_name', 'admin_email','admin_password']))
            newAdmin.admin_password = hash;
            newAdmin.save()
+           const token = admin.generatetokens()
+
            .then(() =>{
-            const token = admin.generatetokens()
-            res.header('auth-token', token).redirect('/login')
+            res.header('x-auth-token', token).send('created admin')
           })
            .catch((err) => console.log(chalk.red('ERROR',err)))   // error checking...
           }  
@@ -38,6 +40,7 @@ const registrer_admin = async(req, res) => {
      }
      
   })
+  next()
 };
 
 //on process.

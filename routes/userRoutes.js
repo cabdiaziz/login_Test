@@ -5,7 +5,7 @@ const router = express.Router();
 
 
 //Register a new user.
-router.post('/create', adminController.registrer_admin);
+router.get('/create', adminController.registrer_admin);
  
 //@PUT update the user
 router.put('/:id', adminController.updateById_admin)
