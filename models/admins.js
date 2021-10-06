@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const jwt = require('jsonwebtoken')
 const Joi = require('joi');
 
 
@@ -15,6 +14,9 @@ const adminSchema = new mongoose.Schema({
       type:String,
       default: 'rector'
   },
+  token:{
+    type: String
+    },
   admin_password:{
       type: String,
       required: true
@@ -25,18 +27,17 @@ const adminSchema = new mongoose.Schema({
   }
 },{timestamps: true})
 
-adminSchema.methods.generatetokens = function () {
-    const token = jwt.sign({_id:this._id}, 'private key')
-    return token;
-}
+
+
+// @JOI package validation function.
+//added joi schema to validate before added into the db.
 
 function admin_validation(admin){
     const schema = Joi.object({     
         admin_name: Joi.string().min(3).max(30).required(),
         admin_email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net','so'] } }).required(),
-        admin_type: Joi.string().min(1),
-        admin_password: Joi.string().min(8).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
-        status : Joi.string().min(1)   
+        admin_type: Joi.string(),
+        admin_password: Joi.string().min(8).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
      });
      return schema.validate(admin);
 }
