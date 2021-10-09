@@ -35,11 +35,12 @@ const signup_post = async (req, res) => {
     else {
        Admin.findOne({ admin_email: req.body.admin_email })
         .then(admin => {
-          if (admin)
-            return res.status(400).send('User already exists !!');
+          if (admin){
+            return res.status(400).send({'user is already created.'})
+          }
           else {
             //added a lodash package to pick wanted items only.
-            const newAdmin = new Admin(_.pick(req.body, ['admin_name', 'admin_email', 'admin_type', 'admin_password']));
+            const newAdmin = await new Admin(_.pick(req.body, ['admin_name', 'admin_email', 'admin_type', 'admin_password']));
             newAdmin.admin_password = hash;
 
             // put here the sign jwt token code            
@@ -56,7 +57,6 @@ const signup_post = async (req, res) => {
         })
         .catch((err) => console.log(chalk.red('ERROR', err)));
     }
-
   })
 };
 
