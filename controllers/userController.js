@@ -3,7 +3,8 @@ const Joi = require('joi');
 const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
 const chalk = require('chalk');
 const _ = require('lodash');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const auth = require('../middleware/auth');
 
 const dashboard_get = (req, res) => {
   res.render('dashboard',{
@@ -17,41 +18,45 @@ const signup_get = (req, res)=>{
     })
 }
 
-const registrer_admin = (req, res) => {
+const login_get =  (req, res) => {
+  res.render('login')
+}
+
+const signup_post = async (req, res) => {
  
   const {error} = admin_validation(req.body);   
   if(error)  {
     return res.status(404).send(error.details[0].message.toString())
   }
   //hashing password
-    bcrypt.hash(req.body.admin_password,10,(err,hash) =>{
+    bcrypt.hash(req.body.admin_password, 10, (err, hash) => {
     if (err)
-       return res.status(500).json({error: err});
-     else{
-         Admin.findOne({admin_email: req.body.admin_email})
-         .then(admin => {
-          if(admin)
-             return res.status(400).send('User already exists !!');
-          else{
-              //added a lodash package to pick wanted items only.
-           const newAdmin = new  Admin(_.pick(req.body,['admin_name', 'admin_email','admin_type','admin_password']))
-           newAdmin.admin_password = hash;
-                     
-             // put here the sign jwt token code            
-           const token = jwt.sign({_id:newAdmin._id}, 'private key')
-           console.log('token == ',token);  // display the new admin token
-           newAdmin.token = token;
+      return res.status(500).json({ error: err });
+    else {
+       Admin.findOne({ admin_email: req.body.admin_email })
+        .then(admin => {
+          if (admin)
+            return res.status(400).send('User already exists !!');
+          else {
+            //added a lodash package to pick wanted items only.
+            const newAdmin = new Admin(_.pick(req.body, ['admin_name', 'admin_email', 'admin_type', 'admin_password']));
+            newAdmin.admin_password = hash;
 
-           newAdmin.save()
-           .then(() =>{
-             res.cookie('x-auth-token', token).send({msg: 'admin is created'})
-           })
-           .catch(err => console.log(chalk.red('ERROR',err)))   // error checking...
-          }  
+            // put here the sign jwt token code            
+            const token = jwt.sign({ _id: newAdmin._id }, 'private key');
+            console.log('token == ', token); // display the new admin token
+            newAdmin.token = token;
+
+            newAdmin.save()
+              .then(() => {
+                res.cookie('x-auth-token', token).redirect('/');
+              })
+              .catch(err => console.log(chalk.red('ERROR', err))); // error checking...
+          }
         })
-        .catch((err) => console.log(chalk.red('ERROR',err)))        
-     }
-     
+        .catch((err) => console.log(chalk.red('ERROR', err)));
+    }
+
   })
 };
 
@@ -79,7 +84,7 @@ const viewAll_admins =  (req, res) => {
 };
 
 //on process
-const loginBy_admin = async(req, res) => {
+const login_post = async(req, res) => {
 
     const {error} = adminLogin_validation(req.body);  
     if(error) return res.status(400).send(error.details[0].message.toString());
@@ -97,7 +102,7 @@ const loginBy_admin = async(req, res) => {
 
           //  const token = admin.token
           //     res.send({token})
-           res.redirect('/dashboard')
+           res.redirect('/')
           }
          else{
        return res.status(400).send('invalid email or password')
@@ -127,10 +132,11 @@ function adminLogin_validation(admin){
   
 
 module.exports ={
-    registrer_admin,
+    signup_post,
     updateById_admin, 
     viewAll_admins,
-    loginBy_admin,
+    login_post,
     dashboard_get,
-    signup_get
+    signup_get,
+    login_get
 };

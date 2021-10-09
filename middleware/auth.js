@@ -3,7 +3,7 @@ const Admin = require('../models/admins')
 
 module.exports = function (req, res, next){
     
-        const token = res.cookie('x-auth-token')
+        let token = req.cookie
         console.log('newadmin-token === ',token);
         if(!token){
           return res.status(401).send('access reject.')

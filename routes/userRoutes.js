@@ -5,26 +5,25 @@ const auth = require('../middleware/auth');
 const router = express.Router();
 
 
-router.get('/', async(req, res) => {
-    res.render('login')
-});
 
 
 //@GET dashboard
-router.get('/dashboard',adminController.dashboard_get)
+router.get('/',auth,adminController.dashboard_get)
 //@GET registration 
-router.get('/create',adminController.signup_get)
+router.get('/signup',adminController.signup_get)
+//GET login
+router.get('/login',adminController.login_get);
 //GET  all users
-router.get('/', adminController.viewAll_admins)
+// router.get('/users', adminController.viewAll_admins)
 
 
 
 //Post Login
-router.post('/login',  adminController.loginBy_admin)
+router.post('/login',  adminController.login_post)
 //@POST Register a new user.
-router.post('/create', adminController.registrer_admin)
+router.post('/signup', adminController.signup_post)
 //@PUT update the user
-router.put('/:id', adminController.updateById_admin)
+// router.put('/:id', adminController.updateById_admin)
 
 
 router.get('/about', (req, res) => {
