@@ -8,7 +8,7 @@ const router = express.Router();
 
 
 //@GET dashboard
-router.get('/',auth,adminController.dashboard_get)
+router.get('/',adminController.dashboard_get)
 //@GET registration 
 router.get('/signup',adminController.signup_get)
 //GET login

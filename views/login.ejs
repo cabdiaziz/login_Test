@@ -12,7 +12,7 @@
     <!-- Main css -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body id="dash">
 
     <div class="main">
         <!-- Sing in  Form -->
@@ -21,7 +21,7 @@
                 <div class="signin-content">
                     <div class="signin-form">
                         <h2 class="form-title">Log in</h2>
-                        <form method="POST" class="register-form" action="/login" id="login" >
+                        <form  class="register-form"  id="form">
                             <div class="form-group">
                                 <label for="admin_email"><i class="zmdi zmdi-account material-icons-name"></i></label>
                                 <input type="text" name="admin_email" id="admin_email" placeholder="email"/>
@@ -35,7 +35,7 @@
                                 <label for="remember-me" class="label-agree-term"><span><span></span></span>Remember me</label>
                             </div> -->
                             <div class="form-group form-button">
-                                <button type="submit" id="signin" class="form-submit"> signin </button>
+                                <button type="button" onclick="login()" id="subBtn  " class="form-submit"> signin </button>
                             </div>
                             <div>
                                 <a href="./signup" >Create an account</a>
@@ -50,7 +50,33 @@
     </div>
 
     <!-- JS -->
+    <script>
+
+        function login() {
+                //create a variable/object xmlhttprequest().
+             const xhttp = new XMLHttpRequest();
+ 
+             xhttp.onload = function() {
+                 if(xhttp.status == 400 || xhttp.status == 401){
+                     alert('Invalid email or password')
+                 }
+                 else{
+                      document.getElementById('dash').innerHTML = this.response;
+                 }
+             }
+ 
+
+             xhttp.open("POST","/login",true);
+             xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+             let email =  document.getElementById('admin_email').value;
+             let pass =  document.getElementById('admin_password').value;
+             if(email != "" && pass != "") xhttp.send(`admin_email=${email}&admin_password=${pass}`);
+             else{alert('not allowed bank please insert a value.')}
+  
+            }
+    </script>
     <script src="vendor/jquery/jquery.min.js"></script>
     <script src="js/main.js"></script>
+    
 </body>
 </html>

@@ -4,16 +4,16 @@ const bcrypt = require('bcryptjs'); // bcryptjs is used to hash passwords.
 const chalk = require('chalk');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
+// const auth = require('../middleware/auth');
 
 const dashboard_get = (req, res) => {
   res.render('dashboard',{
-      msg: 'Welcome to the dashboard page '       
+      msg: 'Welcome to the dashboard page '
   })
 }
 
 const signup_get = (req, res)=>{
-  res.render('create',{
+  res.render('signup',{
       title: 'signup'
     })
 }
@@ -85,30 +85,27 @@ const viewAll_admins =  (req, res) => {
 
 //on process
 const login_post = async(req, res) => {
-
     const {error} = adminLogin_validation(req.body);  
     if(error) return res.status(400).send(error.details[0].message.toString());
-    const  email = req.body.admin_email;
-    await Admin.findOne({admin_email:email})
-    .then((admin)=>{
+    let admin = await Admin.findOne({admin_email:req.body.admin_email})
          if(admin) {
                        //found admin
                        //check admin type. == 'ractor'
                        //if admin is rector is can acces all department and all fuclty.
-           const checkPassword = bcrypt.compare(req.body.admin_password, admin.admin_password)
+           const checkPassword = await bcrypt.compare(req.body.admin_password, admin.admin_password)
            if(!checkPassword) {
               return res.status(400).send('invalid email or password')
            }
 
           //  const token = admin.token
           //     res.send({token})
-           res.redirect('/')
+          res.redirect('/')
           }
          else{
-       return res.status(400).send('invalid email or password')
+       return res.status(401).send('invalid email or password')
       }      
-    })
-    .catch(err => console.log(chalk.red('ERROR',err)))  
+    // })
+    // .catch(err => console.log(chalk.red('ERROR',err)))  
 };
   
 function adminUpdate_validation(admin){
