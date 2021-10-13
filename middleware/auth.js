@@ -1,25 +1,19 @@
 const jwt = require('jsonwebtoken')
 const Admin = require('../models/admins')
 
-module.exports = function (req, res, next){
-    
-        let token = req.cookie
-        console.log('newadmin-token === ',token);
-        if(!token){
-          return res.status(401).send('access reject.')
-        }
-        try{
-        //decode the token  
-        const decodeToken = jwt.verify(token, 'private key')
-        let admin = Admin.findOne({_id: decodeToken._id, 'tokens.token': token})
-        .then(() => {
-            if(!admin) throw new Error()
+module.exports = async function (req, res, next){
+    try{
+        const token = req.header('Authorization').replace('Bearer', '');
+        console.log('auth-token === ', token); //testing..
 
-            req.admin = admin
-            next()
-        })
-        .catch( err => console.log(err))
+        const decodeToken = jwt.verify(token, 'privatekey')
+        let admin = Admin.findOne({_id: decodeToken._id, 'token': token})
+
+        if(!admin) throw new Error()
+
+        req.admin = admin
+        next()    
     }catch(e){
-        return res.status(400).send({error: 'please authenticate / login.'})
+        return res.status(401).send({error: 'please authenticate .'}) //is soo diiwaan gali fadlan.
     }
 }

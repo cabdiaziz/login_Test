@@ -5,9 +5,8 @@ const path = require('path')
 const morgan = require('morgan')
 var cookieParser = require('cookie-parser');
 
-
 require('dotenv').config();
-//process.env.Instance_name
+//process.enviremantalcari.Instance_name
 const port = process.env.PORT || 4000;
 
 const app = express();
@@ -23,17 +22,8 @@ app.use(express.static(publicDirectory))
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json())
 
-// home page
-
-
-
-
 //my API'S from router folder
 app.use(routes);
-
-
-
-
 
 app.listen(port,()=>{
     console.log(`This server is running on port http://localhost:${port}`);
